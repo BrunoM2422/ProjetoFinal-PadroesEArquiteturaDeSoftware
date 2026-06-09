@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel do E-Commerce - Padrões e Arquitetura</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; color: #333; }
+    .container { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .header { grid-column: 1 / -1; text-align: center; margin-bottom: 10px; }
+    h1 { color: #2c3e50; margin: 0; }
+    h3 { margin-top: 0; color: #34495e; border-bottom: 2px solid #ecf0f1; padding-bottom: 8px; }
+    .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    .form-group { margin-bottom: 12px; }
+    label { display: block; margin-bottom: 4px; font-weight: bold; font-size: 14px; }
+    input[type="text"], input[type="number"] { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+    button { background-color: #3498db; color: white; padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; width: 100%; font-weight: bold; }
+    button:hover { background-color: #2980b9; }
+    .btn-sucesso { background-color: #2ecc71; }
+    .btn-sucesso:hover { background-color: #27ae60; }
+    .lista-vertical { display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto; margin-bottom: 15px; padding-right: 5px; }
+    .item-linha { background: #f8f9fa; padding: 10px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #3498db; }
+    .item-linha button { width: auto; padding: 5px 10px; font-size: 12px; }
+    .status-msg { grid-column: 1 / -1; text-align: center; font-weight: bold; padding: 10px; border-radius: 4px; display: none; }
+    .sucesso { background-color: #d4edda; color: #155724; }
+    .erro { background-color: #f8d7da; color: #721c24; }
+    .badge { background: #e67e22; color: white; padding: 2px 6px; border-radius: 10px; font-size: 11px; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>🛒 Arquitetura Limpa & Design Patterns</h1>
+    <p>Demonstração Prática: Factory Method e Strategy Pattern</p>
+  </div>
+  
+  <div id="status" class="status-msg"></div>
+
+  <div class="container">
+    
+    <div class="card">
+      <h3>1. Cadastro de Produtos</h3>
+      <form id="produtoForm">
+        <div class="form-group">
+          <label>Nome do Produto</label>
+          <input type="text" id="nomeProd" placeholder="Ex: Monitor Gamer 24'" required>
+        </div>
+        <div class="form-group">
+          <label>Preço (R$)</label>
+          <input type="number" id="precoProd" step="0.01" placeholder="Ex: 899.90" required>
+        </div>
+        <button type="submit">Cadastrar via Factory Method</button>
+      </form>
+
+      <h3 style="margin-top: 25px;">2. Catálogo de Produtos</h3>
+      <div id="catalogo" class="lista-vertical"></div>
+    </div>
+
+    <div class="card">
+      <h3>3. Carrinho Atual</h3>
+      <div id="carrinho" class="lista-vertical">
+        <p style="color: #7f8c8d; font-style: italic;">Seu carrinho está vazio.</p>
+      </div>
+
+      <div class="form-group">
+        <label>Cupom de Desconto (Dica: Use <b>NATAL15</b> para ativar o Strategy)</label>
+        <input type="text" id="cupomTexto" placeholder="Digite seu cupom aqui">
+      </div>
+      <button id="btnFecharPedido" class="button btn-sucesso">Finalizar Compra (Checkout)</button>
+
+      <h3 style="margin-top: 25px;">4. Pedidos Processados (Histórico)</h3>
+      <div id="historicoPedidos" class="lista-vertical"></div>
+    </div>
+
+  </div>
+
+  <script>
+    let carrinhoIds = [];
+
+    function exibirStatus(msg, tipo) {
+      const div = document.getElementById('status');
+      div.innerText = msg;
+      div.className = `status-msg ${tipo}`;
+      div.style.display = 'block';
+      setTimeout(() => div.style.display = 'none', 4000);
+    }
+
+    // Carrega Produtos da API
+    async function carregarProdutos() {
+      const res = await fetch('/produtos');
+      const produtos = await res.json();
+      const div = document.getElementById('catalogo');
+      div.innerHTML = produtos.length === 0 ? '<p style="color: #95a5a6;">Nenhum produto cadastrado.</p>' : '';
+      
+      produtos.forEach(p => {
+        div.innerHTML += `
+          <div class="item-linha">
+            <div><b>${p.nome}</b><br><span style="color:#2ecc71;">R$ ${p.preco.toFixed(2)}</span></div>
+            <button onclick="adicionarAoCarrinho('${p.id}', '${p.nome}', ${p.preco})">🛒 Adicionar</button>
+          </div>`;
+      });
+    }
+
+    // Carrega Histórico de Pedidos
+    async function carregarPedidos() {
+      const res = await fetch('/pedidos');
+      const pedidos = await res.json();
+      const div = document.getElementById('historicoPedidos');
+      div.innerHTML = pedidos.length === 0 ? '<p style="color: #95a5a6;">Nenhum pedido realizado ainda.</p>' : '';
+      
+      pedidos.forEach(p => {
+        const usouDesconto = p.totalComDesconto < p.totalOriginal;
+        div.innerHTML += `
+          <div class="item-linha" style="border-left-color: #2ecc71;">
+            <div>
+              <span style="font-size:11px; color:#7f8c8d;">ID: ${p.id.substring(0,8)}...</span><br>
+              Produtos: ${p.quantidadeProdutos}
+            </div>
+            <div style="text-align:right;">
+              ${usouDesconto ? `<del style="color:#e74c3c; font-size:12px;">R$ ${p.totalOriginal.toFixed(2)}</del><br>` : ''}
+              <span style="color:#2ecc71; font-weight:bold;">R$ ${p.totalComDesconto.toFixed(2)}</span>
+              ${usouDesconto ? `<br><span class="badge">Strategy Ativo</span>` : ''}
+            </div>
+          </div>`;
+      });
+    }
+
+    function adicionarAoCarrinho(id, nome, preco) {
+      carrinhoIds.push(id);
+      atualizarInterfaceCarrinho();
+    }
+
+    function atualizarInterfaceCarrinho() {
+      const div = document.getElementById('carrinho');
+      if(carrinhoIds.length === 0) {
+        div.innerHTML = '<p style="color: #7f8c8d; font-style: italic;">Seu carrinho está vazio.</p>';
+        return;
+      }
+      div.innerHTML = `<p><b>${carrinhoIds.length}</b> produto(s) selecionado(s) para compra.</p>`;
+    }
+
+    // Enviar formulário de Produto
+    document.getElementById('produtoForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const nome = document.getElementById('nomeProd').value;
+      const preco = parseFloat(document.getElementById('precoProd').value);
+
+      const res = await fetch('/produtos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome, preco })
+      });
+      const data = await res.json();
+      if(data.sucesso) {
+        exibirStatus('Produto criado com Factory Method!', 'sucesso');
+        document.getElementById('produtoForm').reset();
+        carregarProdutos();
+      } else {
+        exibirStatus(data.erro, 'erro');
+      }
+    });
+
+    // Fechar Pedido (Checkout)
+    document.getElementById('btnFecharPedido').addEventListener('click', async () => {
+      if(carrinhoIds.length === 0) {
+        exibirStatus('Adicione pelo menos um produto ao carrinho!', 'erro');
+        return;
+      }
+      const cupom = document.getElementById('cupomTexto').value;
+
+      const res = await fetch('/pedidos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ produtoIds: carrinhoIds, cupom })
+      });
+      const data = await res.json();
+
+      if(data.sucesso) {
+        exibirStatus('Pedido finalizado e computado com sucesso!', 'sucesso');
+        carrinhoIds = [];
+        document.getElementById('cupomTexto').value = '';
+        atualizarInterfaceCarrinho();
+        carregarPedidos();
+      } else {
+        exibirStatus(data.erro, 'erro');
+      }
+    });
+
+    // Init
+    carregarProdutos();
+    carregarPedidos();
+  </script>
+</body>
+</html>
