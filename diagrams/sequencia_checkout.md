@@ -23,4 +23,3 @@ sequenceDiagram
     end
     UC-->>Ctrl: Pedido criado
     Ctrl-->>Cliente: HTTP 201
-    ```
