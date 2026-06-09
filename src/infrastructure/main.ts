@@ -1,32 +1,33 @@
 // src/infrastructure/main.ts
-import { CriarProdutoUseCase } from "../application/use-cases/CriarProdutoUseCase";
+import express from "express";
 import { ProdutoRepositoryEmMemoria } from "./ProdutoRepositoryEmMemoria";
+import { CriarProdutoUseCase } from "../application/use-cases/CriarProdutoUseCase";
+import { CriarProdutoController } from "./controllers/CriarProdutoController";
 
-async function iniciarAplicacao() {
-  console.log("🚀 Executando Fluxo Completo (Clean Architecture)...\n");
+// Novas importações:
+import { ListarProdutosUseCase } from "../application/use-cases/ListarProdutosUseCase";
+import { ListarProdutosController } from "./controllers/ListarProdutosController";
 
-  // 1. Instanciamos a infraestrutura (o "banco de dados" fake)
-  const bancoDeDadosFake = new ProdutoRepositoryEmMemoria();
+const app = express();
+app.use(express.json());
 
-  // 2. Injetamos o banco no Caso de Uso (Inversão de Dependência)
-  const criarProdutoUseCase = new CriarProdutoUseCase(bancoDeDadosFake);
+// 1. Inicializa o banco compartilhado
+const produtoRepository = new ProdutoRepositoryEmMemoria();
 
-  try {
-    // 3. Simulamos uma requisição chegando para criar um produto
-    console.log("📥 Recebendo dados da requisição...");
-    const produtoCriado = await criarProdutoUseCase.executar({
-      nome: "Board Game - Terraforming Mars",
-      preco: 320.00
-    });
+// 2. Configuração do Fluxo de Criação (POST)
+const criarProdutoUseCase = new CriarProdutoUseCase(produtoRepository);
+const criarProdutoController = new CriarProdutoController(criarProdutoUseCase);
 
-    console.log(`\n🎉 Sucesso! Produto retornado pelo Use Case:`);
-    console.log(`ID: ${produtoCriado.id}`);
-    console.log(`Nome: ${produtoCriado.nome}`);
-    console.log(`Preço: R$ ${produtoCriado.preco}`);
+// 3. Configuração do Fluxo de Listagem (GET)
+const listarProdutosUseCase = new ListarProdutosUseCase(produtoRepository);
+const listarProdutosController = new ListarProdutosController(listarProdutosUseCase);
 
-  } catch (error: any) {
-    console.error(`❌ Erro no fluxo: ${error.message}`);
-  }
-}
+// 4. Definição das Rotas
+app.post("/produtos", (req, res) => { criarProdutoController.lidar(req, res); });
+app.get("/produtos", (req, res) => { listarProdutosController.lidar(req, res); }); // <-- Nova Rota!
 
-iniciarAplicacao();
+const PORTA = 3000;
+app.listen(PORTA, () => {
+  console.log(`🚀 Servidor HTTP rodando na porta ${PORTA}`);
+  console.log(`📥 GET habilitado em http://localhost:${PORTA}/produtos`);
+});

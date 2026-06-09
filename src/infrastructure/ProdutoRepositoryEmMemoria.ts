@@ -15,4 +15,7 @@ export class ProdutoRepositoryEmMemoria implements IProdutoRepository {
     const produto = this.produtos.find(p => p.id === id);
     return produto || null;
   }
+  async listarTodos(): Promise<Produto[]> {
+    return this.produtos;
+  }
 }
