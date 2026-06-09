@@ -1,5 +1,4 @@
-# E-Commerce Clean API - Projeto Integrador 3 (Grupo 17)
-
+# E-Commerce Clean API
 Projeto final desenvolvido para a disciplina de Padrões e Arquitetura de Software. O sistema consiste no núcleo de um E-commerce focado em isolamento de domínio, testabilidade e aplicação estrita de padrões de projeto estruturais e comportamentais.
 
 ## 👥 Equipe
