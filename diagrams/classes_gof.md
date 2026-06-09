@@ -1,3 +1,6 @@
+# Diagrama de Classes (Padrões GoF Implementados)
+
+```mermaid
 classDiagram
     class Produto {
         +string id
@@ -48,3 +51,4 @@ classDiagram
         +executar(input) Pedido
     }
     CriarPedidoUseCase --> IPedidoCriadoObserver
+    ```

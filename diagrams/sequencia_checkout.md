@@ -1,3 +1,6 @@
+# Diagrama de Sequência (Fluxo de Checkout)
+
+```mermaid
 sequenceDiagram
     autonumber
     actor Cliente as Interface Web (SPA)
@@ -20,3 +23,4 @@ sequenceDiagram
     end
     UC-->>Ctrl: Retorna Pedido criado
     Ctrl-->>Cliente: Resposta HTTP 201 { sucesso: true }
+    ```

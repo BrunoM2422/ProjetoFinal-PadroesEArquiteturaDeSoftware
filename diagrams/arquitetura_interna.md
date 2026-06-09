@@ -1,3 +1,6 @@
+# Diagrama de Arquitetura Geral (Plano Interno)
+
+```mermaid
 graph TD
     subgraph Infrastructure_Layer [Camada de Infraestrutura]
         Express[Express Framework / main.ts]
@@ -27,3 +30,4 @@ graph TD
     ObserversConcretos -.->|Implementa| Interfaces
     RepoMemory -.->|Implementa| RepoInterfaces
     UseCase --> RepoInterfaces
+    ```
