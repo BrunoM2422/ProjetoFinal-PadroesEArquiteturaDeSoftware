@@ -1,4 +1,4 @@
-# E-Commerce Clean API
+# Site de E-Commerce
 Projeto final desenvolvido para a disciplina de Padrões e Arquitetura de Software. O sistema consiste no núcleo de um E-commerce focado em isolamento de domínio, testabilidade e aplicação estrita de padrões de projeto estruturais e comportamentais.
 
 ## 👥 Equipe
