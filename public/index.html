@@ -30,8 +30,8 @@
 <body>
 
   <div class="header">
-    <h1>🛒 Arquitetura Limpa & Design Patterns</h1>
-    <p>Demonstração Prática: Factory Method e Strategy Pattern</p>
+    <h1>Mundo Gamer Tech</h1>
+
   </div>
   
   <div id="status" class="status-msg"></div>
@@ -49,7 +49,7 @@
           <label>Preço (R$)</label>
           <input type="number" id="precoProd" step="0.01" placeholder="Ex: 899.90" required>
         </div>
-        <button type="submit">Cadastrar via Factory Method</button>
+        <button type="submit">Cadastrar Produto</button>
       </form>
 
       <h3 style="margin-top: 25px;">2. Catálogo de Produtos</h3>
@@ -63,7 +63,7 @@
       </div>
 
       <div class="form-group">
-        <label>Cupom de Desconto (Dica: Use <b>NATAL15</b> para ativar o Strategy)</label>
+        <label>Cupom de Desconto</label>
         <input type="text" id="cupomTexto" placeholder="Digite seu cupom aqui">
       </div>
       <button id="btnFecharPedido" class="button btn-sucesso">Finalizar Compra (Checkout)</button>
@@ -119,7 +119,7 @@
             <div style="text-align:right;">
               ${usouDesconto ? `<del style="color:#e74c3c; font-size:12px;">R$ ${p.totalOriginal.toFixed(2)}</del><br>` : ''}
               <span style="color:#2ecc71; font-weight:bold;">R$ ${p.totalComDesconto.toFixed(2)}</span>
-              ${usouDesconto ? `<br><span class="badge">Strategy Ativo</span>` : ''}
+              ${usouDesconto ? `<br><span class="badge">NATAL15</span>` : ''}
             </div>
           </div>`;
       });
@@ -152,7 +152,7 @@
       });
       const data = await res.json();
       if(data.sucesso) {
-        exibirStatus('Produto criado com Factory Method!', 'sucesso');
+        exibirStatus('Produto criado!', 'sucesso');
         document.getElementById('produtoForm').reset();
         carregarProdutos();
       } else {

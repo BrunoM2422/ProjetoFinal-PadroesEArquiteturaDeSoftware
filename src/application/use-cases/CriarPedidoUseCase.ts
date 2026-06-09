@@ -6,6 +6,7 @@ import { IProdutoRepository } from "../../domain/repositories/IProdutoRepository
 import { SemDesconto } from "../../domain/strategies/SemDesconto";
 import { DescontoCupomNatal } from "../../domain/strategies/DescontoCupomNatal";
 import { IEstrategiaDesconto } from "../../domain/strategies/IEstrategiaDesconto";
+import { IPedidoCriadoObserver } from "../observers/IPedidoCriadoObserver"; // <-- Nova importação
 
 interface CriarPedidoInput {
   produtoIds: string[];
@@ -13,16 +14,22 @@ interface CriarPedidoInput {
 }
 
 export class CriarPedidoUseCase {
-  // Injetamos ambos os repositórios para coordenar a ação
+  // Lista que guardará todos os observers interessados neste evento
+  private observers: IPedidoCriadoObserver[] = [];
+
   constructor(
     private pedidoRepository: IPedidoRepository,
     private produtoRepository: IProdutoRepository
   ) {}
 
+  // Método do padrão Observer para registar novos interessados de fora
+  public registrarObserver(observer: IPedidoCriadoObserver): void {
+    this.observers.push(observer);
+  }
+
   async executar(input: CriarPedidoInput): Promise<Pedido> {
     const produtosValidados: Produto[] = [];
 
-    // 1. Busca e valida se todos os produtos requisitados realmente existem
     for (const id of input.produtoIds) {
       const produto = await this.produtoRepository.buscarPorId(id);
       if (!produto) {
@@ -31,8 +38,6 @@ export class CriarPedidoUseCase {
       produtosValidados.push(produto);
     }
 
-    // 2. Aplicação do Padrão Strategy (GoF) de forma dinâmica
-    // Se o cliente digitou o cupom correto, trocamos a estratégia em tempo de execução
     let estrategia: IEstrategiaDesconto = new SemDesconto();
     
     if (input.cupom?.trim().toUpperCase() === "NATAL15") {
@@ -41,13 +46,24 @@ export class CriarPedidoUseCase {
       throw new Error("Erro de Aplicação: Cupom de desconto inválido ou expirado.");
     }
 
-    // 3. Cria a entidade de Pedido através do seu Factory Method
     const idPedido = crypto.randomUUID();
     const novoPedido = Pedido.criar(idPedido, produtosValidados, estrategia);
 
-    // 4. Salva no banco de dados de pedidos
     await this.pedidoRepository.salvar(novoPedido);
 
+    // 📢 PADRÃO OBSERVER EM AÇÃO:
+    // Notifica todos os observadores registados de forma assíncrona e desacoplada
+    this.notificarObservers(novoPedido);
+
     return novoPedido;
+  }
+
+  private notificarObservers(pedido: Pedido): void {
+    // Dispara a notificação para cada observer sem bloquear o fluxo principal
+    this.observers.forEach(observer => {
+      observer.notificar(pedido).catch(err => 
+        console.error(`[Erro no Observer] Falha ao executar ação secundária: ${err.message}`)
+      );
+    });
   }
 }

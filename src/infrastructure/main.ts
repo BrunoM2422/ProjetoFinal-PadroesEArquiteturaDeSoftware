@@ -14,6 +14,8 @@ import { CriarPedidoUseCase } from "../application/use-cases/CriarPedidoUseCase"
 import { CriarPedidoController } from "./controllers/CriarPedidoController";
 import { ListarPedidosUseCase } from "../application/use-cases/ListarPedidosUseCase";
 import { ListarPedidosController } from "./controllers/ListarPedidosController";
+import { LogPedidoCriadoObserver } from "./observers/LogPedidoCriadoObserver";
+import { EmailSimuladoObserver } from "./observers/EmailSimuladoObserver";
 
 const app = express();
 app.use(express.json());
@@ -29,12 +31,21 @@ const criarProdutoController = new CriarProdutoController(criarProdutoUseCase);
 const listarProdutosUseCase = new ListarProdutosUseCase(produtoRepository);
 const listarProdutosController = new ListarProdutosController(listarProdutosUseCase);
 
-// 3. Acoplamento do Fluxo de Pedidos (Injetando dependências cruzadas no Use Case)
+// 3. Acoplamento do Fluxo de Pedidos 
 const criarPedidoUseCase = new CriarPedidoUseCase(pedidoRepository, produtoRepository);
+
+// ---> ADICIONE AS SEGUINTES LINHAS AQUI (PADRÃO OBSERVER): <---
+const logObserver = new LogPedidoCriadoObserver();
+const emailObserver = new EmailSimuladoObserver();
+
+// Registramos os observadores no caso de uso
+criarPedidoUseCase.registrarObserver(logObserver);
+criarPedidoUseCase.registrarObserver(emailObserver);
+// --------------------------------------------------------------
+
 const criarPedidoController = new CriarPedidoController(criarPedidoUseCase);
 const listarPedidosUseCase = new ListarPedidosUseCase(pedidoRepository);
 const listarPedidosController = new ListarPedidosController(listarPedidosUseCase);
-
 // 4. Definição das Rotas da API
 app.post("/produtos", (req, res) => { criarProdutoController.lidar(req, res); });
 app.get("/produtos", (req, res) => { listarProdutosController.lidar(req, res); });
