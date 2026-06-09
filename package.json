@@ -4,7 +4,8 @@
   "description": "",
   "main": "dist/infrastructure/main.js",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only src/infrastructure/main.ts"
+    "dev": "ts-node-dev --respawn --transpile-only src/infrastructure/main.ts",
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -19,7 +20,10 @@
   "homepage": "https://github.com/BrunoM2422/ProjetoFinal-PadroesEArquiteturaDeSoftware#readme",
   "devDependencies": {
     "@types/express": "^5.0.6",
+    "@types/jest": "^30.0.0",
     "@types/node": "^25.9.2",
+    "jest": "^30.4.2",
+    "ts-jest": "^29.4.11",
     "ts-node-dev": "^2.0.0",
     "typescript": "^6.0.3"
   },

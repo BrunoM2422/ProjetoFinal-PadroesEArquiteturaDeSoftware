@@ -1,0 +1,46 @@
+openapi: 3.0.3
+info:
+  title: API de E-Commerce (Arquitetura Limpa)
+  version: 1.0.0
+  description: Especificação REST para gestão de catálogo e checkout com suporte a cupons.
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Servidor de Desenvolvimento
+paths:
+  /produtos:
+    get:
+      summary: Lista todos os produtos
+      responses:
+        '200':
+          description: Sucesso. Retorna array de produtos.
+    post:
+      summary: Cadastra um novo produto (Factory Method)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nome: { type: string }
+                preco: { type: number }
+      responses:
+        '201':
+          description: Produto criado com sucesso.
+  /pedidos:
+    post:
+      summary: Efetua o checkout de um pedido aplicando cupons (Strategy)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                produtoIds:
+                  type: array
+                  items: { type: string }
+                cupom: { type: string }
+      responses:
+        '201':
+          description: Pedido registrado e Observers acionados.
