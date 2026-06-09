@@ -3,24 +3,24 @@
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Cliente as Interface Web (SPA)
+    actor Cliente as Interface Web
     participant Ctrl as CriarPedidoController
     participant UC as CriarPedidoUseCase
-    participant Domain as Entidade Pedido (Domain)
+    participant Domain as Entidade Pedido
     participant Repo as PedidoRepository
-    participant Obs as Observers (Log/Email)
+    participant Obs as Observers
 
-    Cliente->>Ctrl: POST /pedidos { produtoIds, cupom }
-    Ctrl->>UC: executar({ produtoIds, cupom })
-    UC->>UC: Valida e busca produtos no repositório
-    UC->>Domain: Pedido.criar(id, produtos, estrategia)
-    Domain-->>UC: Instância de Pedido (Calculada via Strategy)
+    Cliente->>Ctrl: POST /pedidos
+    Ctrl->>UC: executar(input)
+    UC->>UC: Valida e busca produtos
+    UC->>Domain: Pedido.criar()
+    Domain-->>UC: Instância de Pedido
     UC->>Repo: salvar(novoPedido)
     UC->>Obs: notificarObservers(novoPedido)
-    par Efeitos Colaterais Assíncronos
-        Obs->>Obs: LogPedidoCriadoObserver: Executa log auditoria
-        Obs->>Obs: EmailSimuladoObserver: Envia e-mail mockado
+    par Assíncrono
+        Obs->>Obs: LogPedidoCriado
+        Obs->>Obs: EmailSimulado
     end
-    UC-->>Ctrl: Retorna Pedido criado
-    Ctrl-->>Cliente: Resposta HTTP 201 { sucesso: true }
+    UC-->>Ctrl: Pedido criado
+    Ctrl-->>Cliente: HTTP 201
     ```
